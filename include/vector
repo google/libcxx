@@ -534,6 +534,14 @@ public:
     template <class _ForwardIterator>
         vector(_ForwardIterator __first, _ForwardIterator __last, const allocator_type& __a,
                typename enable_if<__is_forward_iterator<_ForwardIterator>::value>::type* = 0);
+    template <class _Range>
+        vector(_Range&& __range,
+               typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : vector(__adl_begin(__range), __adl_end(__range)) {}
+    template <class _Range>
+        vector(_Range&& __range, const allocator_type& __a,
+               typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : vector(__adl_begin(__range), __adl_end(__range), __a) {}
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     _LIBCPP_INLINE_VISIBILITY
     vector(initializer_list<value_type> __il);
@@ -564,6 +572,12 @@ public:
              __alloc_traits::propagate_on_container_move_assignment::value &&
              is_nothrow_move_assignable<allocator_type>::value);
 #endif  // _LIBCPP_HAS_NO_RVALUE_REFERENCES
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                           vector&>::type
+        operator=(_Range&& __range)
+        {assign(__range); return *this;}
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     _LIBCPP_INLINE_VISIBILITY
     vector& operator=(initializer_list<value_type> __il)
@@ -585,6 +599,12 @@ public:
             void
         >::type
         assign(_ForwardIterator __first, _ForwardIterator __last);
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           void>::type
+        assign(_Range&& __range)
+        {assign(__adl_begin(__range), __adl_end(__range));}
 
     void assign(size_type __n, const_reference __u);
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
@@ -708,6 +728,16 @@ public:
             iterator
         >::type
         insert(const_iterator __position, _ForwardIterator __first, _ForwardIterator __last);
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if
+        <
+            __is_range_of<_Range, value_type>::value,
+            iterator
+        >::type
+        insert(const_iterator __position, _Range&& __range) {
+            return insert(__position, __adl_begin(__range), __adl_end(__range));
+        }
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     _LIBCPP_INLINE_VISIBILITY
     iterator insert(const_iterator __position, initializer_list<value_type> __il)

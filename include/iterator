@@ -1857,6 +1857,62 @@ end(_Tp (&__array)[_Np])
     return __array + _Np;
 }
 
+template<typename T>
+inline _LIBCPP_INLINE_VISIBILITY
+auto
+__adl_begin(T&& __t) -> decltype(begin(__t)) {
+  return begin(__t);
+}
+
+template<typename T>
+inline _LIBCPP_INLINE_VISIBILITY
+auto
+__adl_end(T&& __t) -> decltype(end(__t)) {
+  return end(__t);
+}
+
+template<class _Range> struct _LIBCPP_VISIBLE __has_begin_end {
+private:
+  template<typename _T>
+  static __two __test(...);
+  template<typename _T>
+  static char __test(typename add_pointer<decltype(begin(declval<_T>()))>::type = 0,
+                     typename add_pointer<decltype(end(declval<_T>()))>::type = 0);
+public:
+  static const bool value = sizeof(__test<_Range>(0, 0)) == 1;
+};
+
+template<class _Range, bool = __has_begin_end<_Range>::value>
+struct _LIBCPP_VISIBLE __has_begin_end_returning_iterator {
+private:
+  static __two __common_type(...);
+  template<typename T> static char __common_type(T b, T e);
+public:
+  static const bool value =
+      sizeof(__common_type(begin(declval<_Range>()), end(declval<_Range>()))) == 1 &&
+      __is_input_iterator<decltype(begin(declval<_Range>()))>::value;
+};
+template<class _Range>
+struct _LIBCPP_VISIBLE __has_begin_end_returning_iterator<_Range, false> {
+  static const bool value = false;
+};
+
+template<class _Range, class _ValueType, bool = __has_begin_end_returning_iterator<_Range>::value>
+struct _LIBCPP_VISIBLE __is_range_of
+    : public is_convertible<decltype(*begin(declval<_Range>())), _ValueType> {
+};
+
+template<class _Range, class _ValueType>
+struct _LIBCPP_VISIBLE __is_range_of<_Range, _ValueType, false> : public false_type {};
+
+template<class _RangeArg, class _Container>
+struct _LIBCPP_VISIBLE __is_range_but_not_container
+    : public integral_constant<bool,
+                               __is_range_of<_RangeArg, typename _Container::value_type>::value &&
+                               !is_same<_Container, typename remove_reference<_RangeArg>::type>::value> {};
+
+
+
 _LIBCPP_END_NAMESPACE_STD
 
 #endif  // _LIBCPP_ITERATOR
