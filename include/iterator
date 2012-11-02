@@ -1909,7 +1909,7 @@ template<class _RangeArg, class _Container>
 struct _LIBCPP_VISIBLE __is_range_but_not_container
     : public integral_constant<bool,
                                __is_range_of<_RangeArg, typename _Container::value_type>::value &&
-                               !is_same<_Container, typename remove_reference<_RangeArg>::type>::value> {};
+                               !is_base_of<_Container, typename remove_reference<_RangeArg>::type>::value> {};
 
 
 
