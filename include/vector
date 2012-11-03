@@ -535,7 +535,7 @@ public:
         vector(_ForwardIterator __first, _ForwardIterator __last, const allocator_type& __a,
                typename enable_if<__is_forward_iterator<_ForwardIterator>::value>::type* = 0);
     template <class _Range>
-        vector(_Range&& __range,
+        explicit vector(_Range&& __range,
                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
         : vector(__adl_begin(__range), __adl_end(__range)) {}
     template <class _Range>
