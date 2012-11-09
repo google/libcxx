@@ -663,6 +663,7 @@ template <class _Key, class _Tp, class _Hash = hash<_Key>, class _Pred = equal_t
           class _Alloc = allocator<pair<const _Key, _Tp> > >
 class _LIBCPP_VISIBLE unordered_map
 {
+    typedef unordered_map                                  __self;
 public:
     // types
     typedef _Key                                           key_type;
@@ -746,6 +747,27 @@ public:
                   const hasher& __hf, const key_equal& __eql,
                   const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_map(_Range&& __range,
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_map(__adl_begin(__range), __adl_end(__range))
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_map(_Range&& __range, size_type __n,
+                           const hasher& __hf = hasher(), const key_equal& __eql = key_equal(),
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_map(__adl_begin(__range), __adl_end(__range), __hf, __eql)
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_map(_Range&& __range, size_type __n,
+                           const hasher& __hf, const key_equal& __eql, const allocator_type& __a,
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_map(__adl_begin(__range), __adl_end(__range), __hf, __eql, __a)
+        {}
+
     // ~unordered_map() = default;
     _LIBCPP_INLINE_VISIBILITY
     unordered_map& operator=(const unordered_map& __u)
@@ -760,6 +782,15 @@ public:
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     unordered_map& operator=(initializer_list<value_type> __il);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       unordered_map&>::type
+    operator=(_Range&& __range)
+        {
+            __table_.__assign_unique(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
 
     _LIBCPP_INLINE_VISIBILITY
     allocator_type get_allocator() const _NOEXCEPT
@@ -824,6 +855,12 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __table_.erase(__p.__i_);}
@@ -1296,6 +1333,7 @@ template <class _Key, class _Tp, class _Hash = hash<_Key>, class _Pred = equal_t
           class _Alloc = allocator<pair<const _Key, _Tp> > >
 class _LIBCPP_VISIBLE unordered_multimap
 {
+    typedef unordered_multimap                             __self;
 public:
     // types
     typedef _Key                                           key_type;
@@ -1378,6 +1416,27 @@ public:
                        const hasher& __hf, const key_equal& __eql,
                        const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multimap(_Range&& __range,
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multimap(__adl_begin(__range), __adl_end(__range))
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multimap(_Range&& __range, size_type __n,
+                                const hasher& __hf = hasher(), const key_equal& __eql = key_equal(),
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multimap(__adl_begin(__range), __adl_end(__range), __hf, __eql)
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multimap(_Range&& __range, size_type __n,
+                                const hasher& __hf, const key_equal& __eql, const allocator_type& __a,
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multimap(__adl_begin(__range), __adl_end(__range), __hf, __eql, __a)
+        {}
+
     // ~unordered_multimap() = default;
     _LIBCPP_INLINE_VISIBILITY
     unordered_multimap& operator=(const unordered_multimap& __u)
@@ -1392,6 +1451,15 @@ public:
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     unordered_multimap& operator=(initializer_list<value_type> __il);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       unordered_multimap&>::type
+    operator=(_Range&& __range)
+        {
+            __table_.__assign_multi(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
 
     _LIBCPP_INLINE_VISIBILITY
     allocator_type get_allocator() const _NOEXCEPT
@@ -1453,6 +1521,12 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __table_.erase(__p.__i_);}

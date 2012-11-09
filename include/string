@@ -1169,6 +1169,16 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     basic_string(initializer_list<value_type> __il, const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        explicit basic_string(_Range&& __range,
+                              typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : basic_string(__adl_begin(__range), __adl_end(__range)) {}
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        basic_string(_Range&& __range, const allocator_type& __a,
+                     typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : basic_string(__adl_begin(__range), __adl_end(__range), __a) {}
 
     ~basic_string();
 
@@ -1185,6 +1195,12 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     basic_string& operator=(initializer_list<value_type> __il) {return assign(__il.begin(), __il.size());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                           basic_string&>::type
+        operator=(_Range&& __range)
+        {assign(__range); return *this;}
 
 #ifndef _LIBCPP_DEBUG
     _LIBCPP_INLINE_VISIBILITY
@@ -1260,6 +1276,11 @@ public:
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     _LIBCPP_INLINE_VISIBILITY basic_string& operator+=(initializer_list<value_type> __il) {return append(__il);}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           basic_string&>::type
+        operator+=(_Range&& __range) {return append(__range);}
 
     _LIBCPP_INLINE_VISIBILITY
     basic_string& append(const basic_string& __str);
@@ -1286,6 +1307,11 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     basic_string& append(initializer_list<value_type> __il) {return append(__il.begin(), __il.size());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           basic_string&>::type
+        append(_Range&& __range) {return append(__adl_begin(__range), __adl_end(__range));}
 
     void push_back(value_type __c);
     _LIBCPP_INLINE_VISIBILITY
@@ -1325,6 +1351,11 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     basic_string& assign(initializer_list<value_type> __il) {return assign(__il.begin(), __il.size());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           basic_string&>::type
+        assign(_Range&& __range) {return assign(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     basic_string& insert(size_type __pos1, const basic_string& __str);
@@ -1355,6 +1386,12 @@ public:
     iterator insert(const_iterator __pos, initializer_list<value_type> __il)
                     {return insert(__pos, __il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           iterator>::type
+        insert(const_iterator __pos, _Range&& __range)
+        {return insert(__pos, __adl_begin(__range), __adl_end(__range));}
 
     basic_string& erase(size_type __pos = 0, size_type __n = npos);
     _LIBCPP_INLINE_VISIBILITY
@@ -1388,6 +1425,12 @@ public:
     basic_string& replace(const_iterator __i1, const_iterator __i2, initializer_list<value_type> __il)
         {return replace(__i1, __i2, __il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           basic_string&>::type
+        replace(const_iterator __i1, const_iterator __i2, _Range&& __range)
+    {return replace(__i1, __i2, __adl_begin(__range), __adl_end(__range));}
 
     size_type copy(pointer __s, size_type __n, size_type __pos = 0) const;
     _LIBCPP_INLINE_VISIBILITY

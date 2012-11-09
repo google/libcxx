@@ -536,7 +536,7 @@ public:
                typename enable_if<__is_forward_iterator<_ForwardIterator>::value>::type* = 0);
     template <class _Range>
         explicit vector(_Range&& __range,
-               typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+                        typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
         : vector(__adl_begin(__range), __adl_end(__range)) {}
     template <class _Range>
         vector(_Range&& __range, const allocator_type& __a,
@@ -2094,6 +2094,16 @@ public:
     vector(initializer_list<value_type> __il);
     vector(initializer_list<value_type> __il, const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        explicit vector(_Range&& __range,
+                       typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : vector(__adl_begin(__range), __adl_end(__range)) {}
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        vector(_Range&& __range, const allocator_type& __a,
+              typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : vector(__adl_begin(__range), __adl_end(__range), __a) {}
 
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     _LIBCPP_INLINE_VISIBILITY
@@ -2111,6 +2121,12 @@ public:
     vector& operator=(initializer_list<value_type> __il)
         {assign(__il.begin(), __il.end()); return *this;}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                           vector&>::type
+        operator=(_Range&& __range)
+        {assign(__range); return *this;}
 
     template <class _InputIterator>
         typename enable_if
@@ -2134,6 +2150,11 @@ public:
     void assign(initializer_list<value_type> __il)
         {assign(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           void>::type
+        assign(_Range&& __range) {assign(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY allocator_type get_allocator() const _NOEXCEPT
         {return allocator_type(this->__alloc());}
@@ -2226,6 +2247,12 @@ public:
     iterator insert(const_iterator __position, initializer_list<value_type> __il)
         {return insert(__position, __il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           iterator>::type
+        insert(const_iterator position, _Range&& __range)
+        {return insert(position, __adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY iterator erase(const_iterator __position);
     iterator erase(const_iterator __first, const_iterator __last);

@@ -674,6 +674,7 @@ template <class _Key, class _Tp, class _Compare = less<_Key>,
           class _Allocator = allocator<pair<const _Key, _Tp> > >
 class _LIBCPP_VISIBLE map
 {
+    typedef map                                      __self;
 public:
     // types:
     typedef _Key                                     key_type;
@@ -814,6 +815,30 @@ public:
 
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
 
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit map(_Range&& __range, const key_compare& __comp = key_compare(),
+                 typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : map(__adl_begin(__range), __adl_end(__range), __comp)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit map(_Range&& __range, const key_compare& __comp, const allocator_type& __a,
+                 typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : map(__adl_begin(__range), __adl_end(__range), __comp, __a)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       map&>::type
+    operator=(_Range&& __range)
+        {
+            __tree_.__assign_unique(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
+
     _LIBCPP_INLINE_VISIBILITY
     explicit map(const allocator_type& __a)
         : __tree_(__a)
@@ -930,6 +955,12 @@ public:
         {insert(__il.begin(), __il.end());}
 
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __tree_.erase(__p.__i_);}
@@ -1424,6 +1455,7 @@ template <class _Key, class _Tp, class _Compare = less<_Key>,
           class _Allocator = allocator<pair<const _Key, _Tp> > >
 class _LIBCPP_VISIBLE multimap
 {
+    typedef multimap                                 __self;
 public:
     // types:
     typedef _Key                                     key_type;
@@ -1566,6 +1598,31 @@ public:
 
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
 
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit multimap(_Range&& __range, const key_compare& __comp = key_compare(),
+                      typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : multimap(__adl_begin(__range), __adl_end(__range), __comp)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit multimap(_Range&& __range, const key_compare& __comp, const allocator_type& __a,
+                      typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : multimap(__adl_begin(__range), __adl_end(__range), __comp, __a)
+        {}
+
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       multimap&>::type
+    operator=(_Range&& __range)
+        {
+            __tree_.__assign_multi(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
+
     _LIBCPP_INLINE_VISIBILITY
     explicit multimap(const allocator_type& __a)
         : __tree_(__a)
@@ -1672,6 +1729,13 @@ public:
         {insert(__il.begin(), __il.end());}
 
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __tree_.erase(__p.__i_);}

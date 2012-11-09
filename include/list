@@ -775,6 +775,7 @@ class _LIBCPP_VISIBLE list
     typedef typename base::__node_allocator    __node_allocator;
     typedef typename base::__node_pointer      __node_pointer;
     typedef typename base::__node_alloc_traits __node_alloc_traits;
+    typedef list                               __self;
 
 public:
     typedef _Tp                                      value_type;
@@ -824,6 +825,16 @@ public:
     list(initializer_list<value_type> __il);
     list(initializer_list<value_type> __il, const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        explicit list(_Range&& __range,
+                      typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : list(__adl_begin(__range), __adl_end(__range)) {}
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        list(_Range&& __range, const allocator_type& __a,
+             typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : list(__adl_begin(__range), __adl_end(__range), __a) {}
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     list(list&& __c)
         _NOEXCEPT_(is_nothrow_move_constructible<__node_allocator>::value);
@@ -838,6 +849,12 @@ public:
     list& operator=(initializer_list<value_type> __il)
         {assign(__il.begin(), __il.end()); return *this;}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                           list&>::type
+        operator=(_Range&& __range)
+        {assign(__range); return *this;}
 
     template <class _InpIter>
         void assign(_InpIter __f, _InpIter __l,
@@ -848,6 +865,11 @@ public:
     void assign(initializer_list<value_type> __il)
         {assign(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           void>::type
+        assign(_Range&& __range) {assign(__adl_begin(__range), __adl_end(__range));}
 
     allocator_type get_allocator() const _NOEXCEPT;
 
@@ -943,6 +965,12 @@ public:
     iterator insert(const_iterator __p, initializer_list<value_type> __il)
         {return insert(__p, __il.begin(), __il.end());}
 #endif   // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           iterator>::type
+        insert(const_iterator position, _Range&& __range)
+        {return insert(position, __adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     void swap(list& __c)

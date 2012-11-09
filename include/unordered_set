@@ -315,6 +315,7 @@ template <class _Value, class _Hash = hash<_Value>, class _Pred = equal_to<_Valu
           class _Alloc = allocator<_Value> >
 class _LIBCPP_VISIBLE unordered_set
 {
+    typedef unordered_set                                              __self;
 public:
     // types
     typedef _Value                                                     key_type;
@@ -376,6 +377,27 @@ public:
                   const hasher& __hf, const key_equal& __eql,
                   const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_set(_Range&& __range,
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_set(__adl_begin(__range), __adl_end(__range))
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_set(_Range&& __range, size_type __n,
+                           const hasher& __hf = hasher(), const key_equal& __eql = key_equal(),
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_set(__adl_begin(__range), __adl_end(__range), __hf, __eql)
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_set(_Range&& __range, size_type __n,
+                           const hasher& __hf, const key_equal& __eql, const allocator_type& __a,
+                           typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_set(__adl_begin(__range), __adl_end(__range), __hf, __eql, __a)
+        {}
+
     // ~unordered_set() = default;
     _LIBCPP_INLINE_VISIBILITY
     unordered_set& operator=(const unordered_set& __u)
@@ -390,6 +412,15 @@ public:
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     unordered_set& operator=(initializer_list<value_type> __il);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       unordered_set&>::type
+    operator=(_Range&& __range)
+        {
+            __table_.__assign_unique(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
 
     _LIBCPP_INLINE_VISIBILITY
     allocator_type get_allocator() const _NOEXCEPT
@@ -448,6 +479,12 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __table_.erase(__p);}
@@ -727,6 +764,7 @@ template <class _Value, class _Hash = hash<_Value>, class _Pred = equal_to<_Valu
           class _Alloc = allocator<_Value> >
 class _LIBCPP_VISIBLE unordered_multiset
 {
+    typedef unordered_multiset                                         __self;
 public:
     // types
     typedef _Value                                                     key_type;
@@ -788,6 +826,27 @@ public:
                        const hasher& __hf, const key_equal& __eql,
                        const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multiset(_Range&& __range,
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multiset(__adl_begin(__range), __adl_end(__range))
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multiset(_Range&& __range, size_type __n,
+                                const hasher& __hf = hasher(), const key_equal& __eql = key_equal(),
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multiset(__adl_begin(__range), __adl_end(__range), __hf, __eql)
+        {}
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit unordered_multiset(_Range&& __range, size_type __n,
+                                const hasher& __hf, const key_equal& __eql, const allocator_type& __a,
+                                typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : unordered_multiset(__adl_begin(__range), __adl_end(__range), __hf, __eql, __a)
+        {}
+
     // ~unordered_multiset() = default;
     _LIBCPP_INLINE_VISIBILITY
     unordered_multiset& operator=(const unordered_multiset& __u)
@@ -802,6 +861,15 @@ public:
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     unordered_multiset& operator=(initializer_list<value_type> __il);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       unordered_multiset&>::type
+    operator=(_Range&& __range)
+        {
+            __table_.__assign_multi(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
 
     _LIBCPP_INLINE_VISIBILITY
     allocator_type get_allocator() const _NOEXCEPT
@@ -858,6 +926,12 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator erase(const_iterator __p) {return __table_.erase(__p);}

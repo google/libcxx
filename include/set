@@ -348,6 +348,7 @@ template <class _Key, class _Compare = less<_Key>,
           class _Allocator = allocator<_Key> >
 class _LIBCPP_VISIBLE set
 {
+    typedef set                                      __self;
 public:
     // types:
     typedef _Key                                     key_type;
@@ -463,6 +464,30 @@ public:
         }
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
 
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit set(_Range&& __range, const key_compare& __comp = key_compare(),
+                 typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : set(__adl_begin(__range), __adl_end(__range), __comp)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit set(_Range&& __range, const key_compare& __comp, const allocator_type& __a,
+                 typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : set(__adl_begin(__range), __adl_end(__range), __comp, __a)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       set&>::type
+    operator=(_Range&& __range)
+        {
+            __tree_.__assign_unique(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
+
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     _LIBCPP_INLINE_VISIBILITY
     set& operator=(set&& __s)
@@ -551,6 +576,13 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator  erase(const_iterator __p) {return __tree_.erase(__p);}
@@ -687,6 +719,7 @@ template <class _Key, class _Compare = less<_Key>,
           class _Allocator = allocator<_Key> >
 class _LIBCPP_VISIBLE multiset
 {
+    typedef multiset                                 __self;
 public:
     // types:
     typedef _Key                                      key_type;
@@ -801,6 +834,30 @@ public:
         }
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
 
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit multiset(_Range&& __range, const key_compare& __comp = key_compare(),
+                      typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : multiset(__adl_begin(__range), __adl_end(__range), __comp)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    explicit multiset(_Range&& __range, const key_compare& __comp, const allocator_type& __a,
+                      typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : multiset(__adl_begin(__range), __adl_end(__range), __comp, __a)
+        {}
+
+    template<class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                       multiset&>::type
+    operator=(_Range&& __range)
+        {
+            __tree_.__assign_multi(__adl_begin(__range), __adl_end(__range));
+            return *this;
+        }
+
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     _LIBCPP_INLINE_VISIBILITY
     multiset& operator=(multiset&& __s)
@@ -889,6 +946,13 @@ public:
     void insert(initializer_list<value_type> __il)
         {insert(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+
+    template<typename _Range>
+    _LIBCPP_INLINE_VISIBILITY
+    typename enable_if<__is_range_of<_Range, value_type>::value,
+                       void>::type
+    insert(_Range&& __range)
+        {insert(__adl_begin(__range), __adl_end(__range));}
 
     _LIBCPP_INLINE_VISIBILITY
     iterator  erase(const_iterator __p) {return __tree_.erase(__p);}

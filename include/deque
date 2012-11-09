@@ -1170,6 +1170,7 @@ template <class _Tp, class _Allocator = allocator<_Tp> >
 class _LIBCPP_VISIBLE deque
     : private __deque_base<_Tp, _Allocator>
 {
+    typedef deque                                  __self;
 public:
     // types:
 
@@ -1212,12 +1213,28 @@ public:
     deque(initializer_list<value_type> __il);
     deque(initializer_list<value_type> __il, const allocator_type& __a);
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        explicit deque(_Range&& __range,
+                       typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : deque(__adl_begin(__range), __adl_end(__range)) {}
+    template<class _Range>
+        _LIBCPP_INLINE_VISIBILITY
+        deque(_Range&& __range, const allocator_type& __a,
+              typename enable_if<__is_range_but_not_container<_Range, __self>::value>::type* = 0)
+        : deque(__adl_begin(__range), __adl_end(__range), __a) {}
 
     deque& operator=(const deque& __c);
 #ifndef _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
     _LIBCPP_INLINE_VISIBILITY
     deque& operator=(initializer_list<value_type> __il) {assign(__il); return *this;}
 #endif   // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_but_not_container<_Range, __self>::value,
+                           deque&>::type
+        operator=(_Range&& __range)
+        {assign(__range); return *this;}
 
 #ifndef _LIBCPP_HAS_NO_RVALUE_REFERENCES
     deque(deque&& __c) _NOEXCEPT_(is_nothrow_move_constructible<__base>::value);
@@ -1239,6 +1256,11 @@ public:
     _LIBCPP_INLINE_VISIBILITY
     void assign(initializer_list<value_type> __il) {assign(__il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           void>::type
+        assign(_Range&& __range) {assign(__adl_begin(__range), __adl_end(__range));}
 
     allocator_type get_allocator() const _NOEXCEPT;
 
@@ -1328,6 +1350,12 @@ public:
     iterator insert(const_iterator __p, initializer_list<value_type> __il)
         {return insert(__p, __il.begin(), __il.end());}
 #endif  // _LIBCPP_HAS_NO_GENERALIZED_INITIALIZERS
+    template <class _Range>
+    _LIBCPP_INLINE_VISIBILITY
+        typename enable_if<__is_range_of<_Range, value_type>::value,
+                           iterator>::type
+        insert(const_iterator position, _Range&& __range)
+        {return insert(position, __adl_begin(__range), __adl_end(__range));}
     void pop_front();
     void pop_back();
     iterator erase(const_iterator __p);
