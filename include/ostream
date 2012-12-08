@@ -1228,6 +1228,40 @@ operator<<(_Stream&& __os, const _Tp& __x)
 
 #endif  // _LIBCPP_HAS_NO_RVALUE_REFERENCES
 
+template<class _CharT, class _Traits>
+basic_ostream<_CharT, _Traits>&
+operator<<(basic_ostream<_CharT, _Traits>& __os,
+           basic_string_ref<_CharT, _Traits> __str)
+{
+#ifndef _LIBCPP_NO_EXCEPTIONS
+    try
+    {
+#endif  // _LIBCPP_NO_EXCEPTIONS
+        typename basic_ostream<_CharT, _Traits>::sentry __s(__os);
+        if (__s)
+        {
+            typedef ostreambuf_iterator<_CharT, _Traits> _Ip;
+            size_t __len = __str.size();
+            if (__pad_and_output(_Ip(__os),
+                                 __str.data(),
+                                 (__os.flags() & ios_base::adjustfield) == ios_base::left ?
+                                     __str.data() + __len :
+                                     __str.data(),
+                                 __str.data() + __len,
+                                 __os,
+                                 __os.fill()).failed())
+                __os.setstate(ios_base::badbit | ios_base::failbit);
+        }
+#ifndef _LIBCPP_NO_EXCEPTIONS
+    }
+    catch (...)
+    {
+        __os.__set_badbit_and_consider_rethrow();
+    }
+#endif  // _LIBCPP_NO_EXCEPTIONS
+    return __os;
+}
+
 template<class _CharT, class _Traits, class _Allocator>
 basic_ostream<_CharT, _Traits>&
 operator<<(basic_ostream<_CharT, _Traits>& __os,

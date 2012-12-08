@@ -974,28 +974,7 @@ char_traits<char32_t>::assign(char_type* __s, size_t __n, char_type __a)
 
 #endif  // _LIBCPP_HAS_NO_UNICODE_CHARS
 
-// basic_string
-
-template<class _CharT, class _Traits, class _Allocator>
-basic_string<_CharT, _Traits, _Allocator>
-operator+(const basic_string<_CharT, _Traits, _Allocator>& __x,
-          const basic_string<_CharT, _Traits, _Allocator>& __y);
-
-template<class _CharT, class _Traits, class _Allocator>
-basic_string<_CharT, _Traits, _Allocator>
-operator+(const _CharT* __x, const basic_string<_CharT,_Traits,_Allocator>& __y);
-
-template<class _CharT, class _Traits, class _Allocator>
-basic_string<_CharT, _Traits, _Allocator>
-operator+(_CharT __x, const basic_string<_CharT,_Traits,_Allocator>& __y);
-
-template<class _CharT, class _Traits, class _Allocator>
-basic_string<_CharT, _Traits, _Allocator>
-operator+(const basic_string<_CharT, _Traits, _Allocator>& __x, const _CharT* __y);
-
-template<class _CharT, class _Traits, class _Allocator>
-basic_string<_CharT, _Traits, _Allocator>
-operator+(const basic_string<_CharT, _Traits, _Allocator>& __x, _CharT __y);
+// basic_string and basic_string_ref
 
 template <bool>
 class __basic_string_common
@@ -1035,6 +1014,151 @@ _LIBCPP_EXTERN_TEMPLATE(class __basic_string_common<true>)
 #ifdef _MSC_VER
 #pragma warning( pop )
 #endif // _MSC_VER
+
+// basic_string_ref
+
+template<class _CharT, class _Traits = char_traits<_CharT>>
+class _LIBCPP_VISIBLE basic_string_ref
+    : private __basic_string_common<true>
+{
+public:
+    typedef _CharT value_type;
+    typedef const _CharT* pointer;
+    typedef const _CharT* const_pointer;
+    typedef const _CharT& reference;
+    typedef const _CharT& const_reference;
+
+#ifdef _LIBCPP_DEBUG
+    typedef __debug_iter<basic_string_ref, const_pointer>    const_iterator;
+    friend class __debug_iter<basic_string_ref, const_pointer>;
+#elif defined(_LIBCPP_RAW_ITERATORS)
+    typedef const_pointer                                const_iterator;
+#else  // defined(_LIBCPP_RAW_ITERATORS)
+    typedef __wrap_iter<const_pointer>                   const_iterator;
+#endif  // defined(_LIBCPP_RAW_ITERATORS)
+    typedef const_iterator iterator;
+
+    typedef _VSTD::reverse_iterator<const_iterator> const_reverse_iterator;
+    typedef const_reverse_iterator reverse_iterator;
+    typedef size_t size_type;
+    typedef ptrdiff_t difference_type;
+
+private:
+    pointer __data_;
+    size_type __size_;
+
+#ifdef _LIBCPP_DEBUG
+
+    pair<iterator*, const_iterator*> __iterator_list_;
+
+    _LIBCPP_INLINE_VISIBILITY iterator*&       __get_iterator_list(iterator*)       {return __iterator_list_.first;}
+    _LIBCPP_INLINE_VISIBILITY const_iterator*& __get_iterator_list(const_iterator*) {return __iterator_list_.second;}
+
+#endif  // _LIBCPP_DEBUG
+
+public:
+    static constexpr size_type npos = size_type(-1);
+
+    // 21.4.1, construct/copy
+    constexpr basic_string_ref() noexcept : __data_(NULL), __size_(0) {}
+    constexpr basic_string_ref(const basic_string_ref&) noexcept = default;
+    basic_string_ref& operator=(const basic_string_ref&) noexcept = default;
+
+    constexpr basic_string_ref(const _CharT* str)
+        : __data_(str), __size_(str == nullptr ? 0 : _Traits::length(str)) {}
+    constexpr basic_string_ref(const _CharT* str, size_type len)
+        : __data_(str), __size_(len) {}
+
+    // 21.4.2, iterators
+#ifndef _LIBCPP_DEBUG
+    constexpr const_iterator begin() const noexcept {return __data_;}
+    constexpr const_iterator end() const noexcept {return __data_ + __size_;}
+#else  // _LIBCPP_DEBUG
+    _LIBCPP_INLINE_VISIBILITY const_iterator begin() const {return const_iterator(this, __data_);}
+    _LIBCPP_INLINE_VISIBILITY const_iterator end() const   {return const_iterator(this, __data_ + __size_);}
+#endif  // _LIBCPP_DEBUG
+    constexpr const_iterator cbegin() const noexcept {return begin();}
+    constexpr const_iterator cend() const noexcept {return end();}
+
+    const_reverse_iterator rbegin() const noexcept {return reverse_iterator(end());}
+    const_reverse_iterator rend() const noexcept {return reverse_iterator(begin());}
+    const_reverse_iterator crbegin() const noexcept {return rbegin();}
+    const_reverse_iterator crend() const noexcept {return rend();}
+
+    // 21.4.3, capacity
+    constexpr size_type size() const noexcept {return __size_;}
+    constexpr size_type length() const noexcept {return __size_;}
+    constexpr size_type max_size() const noexcept {return SIZE_MAX/sizeof(_CharT);}
+    constexpr bool empty() const noexcept {return __size_ == 0; }
+
+    // 21.4.4, element access
+    constexpr const _CharT& operator[](size_type pos) const;
+    const _CharT& at(size_t pos) const;
+    constexpr const _CharT& front() const {return __data_[0];}
+    constexpr const _CharT& back() const {return __data_[__size_-1];}
+    constexpr const _CharT* data() const noexcept {return __data_;}
+
+    // 21.4.5, modifiers:
+    void clear() noexcept;
+    void remove_prefix(size_type n); void remove_suffix(size_type n);
+
+    // 21.4.6, string operations:
+    constexpr basic_string_ref substr(size_type pos, size_type n=npos) const;
+    constexpr int compare(basic_string_ref s) const noexcept;
+    constexpr int compare(const _CharT* s) const noexcept;
+    constexpr bool starts_with(basic_string_ref s) const noexcept;
+    constexpr bool starts_with(_CharT c) const noexcept;
+    constexpr bool starts_with(const _CharT* s) const noexcept;
+    constexpr bool ends_with(basic_string_ref s) const noexcept;
+    constexpr bool ends_with(_CharT c) const noexcept;
+    constexpr bool ends_with(const _CharT* s) const noexcept;
+    size_type find(basic_string_ref s) const noexcept;
+    size_type find(_CharT c) const noexcept;
+    size_type find(const _CharT* s) const noexcept;
+    size_type rfind(basic_string_ref s) const noexcept;
+    size_type rfind(_CharT c) const noexcept;
+    size_type rfind(const _CharT* s) const noexcept;
+    size_type find_first_of(basic_string_ref s) const noexcept;
+    size_type find_first_of(_CharT c) const noexcept;
+    size_type find_first_of(const _CharT* s) const noexcept;
+    size_type find_last_of(basic_string_ref s) const noexcept;
+    size_type find_last_of(_CharT c) const noexcept;
+    size_type find_last_of(const _CharT* s) const noexcept;
+    size_type find_first_not_of(basic_string_ref s) const noexcept;
+    size_type find_first_not_of(_CharT c) const noexcept;
+    size_type find_first_not_of(const _CharT* s) const noexcept;
+    size_type find_last_not_of(basic_string_ref s) const noexcept;
+    size_type find_last_not_of(_CharT c) const noexcept;
+    size_type find_last_not_of(const _CharT* s) const noexcept;
+};
+
+typedef basic_string_ref<char> string_ref;
+typedef basic_string_ref<wchar_t> wstring_ref;
+typedef basic_string_ref<char16_t> u16string_ref;
+typedef basic_string_ref<char32_t> u32string_ref;
+
+// basic_string
+
+template<class _CharT, class _Traits, class _Allocator>
+basic_string<_CharT, _Traits, _Allocator>
+operator+(const basic_string<_CharT, _Traits, _Allocator>& __x,
+          const basic_string<_CharT, _Traits, _Allocator>& __y);
+
+template<class _CharT, class _Traits, class _Allocator>
+basic_string<_CharT, _Traits, _Allocator>
+operator+(const _CharT* __x, const basic_string<_CharT,_Traits,_Allocator>& __y);
+
+template<class _CharT, class _Traits, class _Allocator>
+basic_string<_CharT, _Traits, _Allocator>
+operator+(_CharT __x, const basic_string<_CharT,_Traits,_Allocator>& __y);
+
+template<class _CharT, class _Traits, class _Allocator>
+basic_string<_CharT, _Traits, _Allocator>
+operator+(const basic_string<_CharT, _Traits, _Allocator>& __x, const _CharT* __y);
+
+template<class _CharT, class _Traits, class _Allocator>
+basic_string<_CharT, _Traits, _Allocator>
+operator+(const basic_string<_CharT, _Traits, _Allocator>& __x, _CharT __y);
 
 template<class _CharT, class _Traits, class _Allocator>
 class _LIBCPP_VISIBLE basic_string
